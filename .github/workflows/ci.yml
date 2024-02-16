@@ -10,106 +10,119 @@ jobs:
   build:
     name: Verify tests pass
 
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
 
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     strategy:
       fail-fast: false
       matrix:
         container_image:
-          - docker.io/library/alpine:latest
-          - docker.io/library/alpine:edge
-          - quay.io/centos/centos:stream8
-          - quay.io/centos/centos:stream9
-          - registry.fedoraproject.org/fedora:38
-          - registry.fedoraproject.org/fedora:39
-          - registry.fedoraproject.org/fedora:rawhide
           - registry.access.redhat.com/ubi8
-          - registry.access.redhat.com/ubi9
         dotnet_version:
-          - "6.0"
-          - "7.0"
           - "8.0"
-        exclude:
-          - container_image: docker.io/library/alpine:latest
-            dotnet_version: "8.0"
-          - container_image: registry.fedoraproject.org/fedora:rawhide
-            dotnet_version: "7.0"
-
-    container:
-      image: ${{ matrix.container_image }}
-      options: --security-opt seccomp=unconfined
-
+        platform: [linux/s390x]
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v1
 
-      - name: Install .NET ${{ matrix.dotnet_version }}
-        timeout-minutes: 5
+      - name: Initialize containers
         run: |
-          set -euo pipefail
-          cat /etc/os-release
-          if grep fedora /etc/os-release ; then
-            dnf install -y dotnet-sdk-${{ matrix.dotnet_version }}
-          elif grep alpine /etc/os-release; then
-            if grep edge /etc/os-release; then
-              echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
-            fi
-            apk add dotnet-sdk-${{ matrix.dotnet_version }} dotnet-doc
-            if [[ ! ${{ matrix.dotnet_version }} == *6* ]] && [[ ! ${{ matrix.dotnet_version }} == *7* ]]; then
-              apk add \
-                dotnet-sdk-dbg-${{ matrix.dotnet_version }} \
-                dotnet-runtime-dbg-${{ matrix.dotnet_version }} \
-                aspnetcore-runtime-dbg-${{ matrix.dotnet_version }}
-            fi
-          fi
+          sudo apt-get -y install podman
+          podman run -t -d --platform=${{ matrix.platform }} ${{ matrix.container_image}}
+          podman stop --latest
+          
+      - name: Install .NET ${{ matrix.dotnet_version }}
+        timeout-minutes: 7
+        run: |
+          podman restart --latest
+          podman exec --latest /bin/bash -c \
+            'echo \
+               "#!/usr/bin/env bash
+               set -euo pipefail
+               cat /etc/os-release
+               if grep fedora /etc/os-release ; then
+                 dnf install -y dotnet-sdk-${{ matrix.dotnet_version }}
+               elif grep alpine /etc/os-release; then
+                 if grep edge /etc/os-release; then
+                   echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+                 fi
+                 apk add dotnet-sdk-${{ matrix.dotnet_version }} dotnet-doc
+                 if [[ ! ${{ matrix.dotnet_version }} == *6* ]] && [[ ! ${{ matrix.dotnet_version }} == *7* ]]; then
+                   apk add \
+                     dotnet-sdk-dbg-${{ matrix.dotnet_version }} \
+                     dotnet-runtime-dbg-${{ matrix.dotnet_version }} \
+                     aspnetcore-runtime-dbg-${{ matrix.dotnet_version }}
+                 fi
+               fi" > install-dotnet.sh'
+          podman exec --latest chmod +x install-dotnet.sh
+          podman exec --latest /bin/bash -c './install-dotnet.sh'
+          podman stop --latest
 
       - name: Install Test dependencies
         timeout-minutes: 2
         run: |
-          if grep fedora /etc/os-release ; then
-            dnf install -y python3 wget $(grep '^Dependencies(dnf): ' README.md | cut -d: -f2-) --skip-broken
-          elif grep alpine /etc/os-release; then
-            apk add python3 wget curl $(grep '^Dependencies(apk): ' README.md | cut -d: -f2-)
-            echo -e '[PostgreSQL]\nDescription=PostgreSQL Unicode\nDriver=/usr/lib/psqlodbcw.so\nUsageCount=1' > /etc/odbcinst.ini
-          fi
+          podman restart --latest
+          podman exec --latest /bin/bash -c \
+            'echo \
+              "if grep fedora /etc/os-release ; then
+                 dnf install -y python3 wget $(grep \ "^Dependencies(dnf): " README.md | cut -d: -f2-) --skip-broken
+               elif grep alpine /etc/os-release; then
+                 apk add python3 wget curl $(grep \ "^Dependencies(apk): " README.md | cut -d: -f2-)
+                 echo -e \ "[PostgreSQL]\nDescription=PostgreSQL Unicode\nDriver=/usr/lib/psqlodbcw.so\nUsageCount=1" > /etc/odbcinst.ini
+               fi" > install-dependencies.sh'
+          podman exec --latest chmod +x install-dependencies.sh
+          podman exec --latest /bin/bash -c './install-dependencies.sh'
+          podman stop --latest
+
 
       - name: Download test runner
         run: |
-          set -euo pipefail
-          wget --no-verbose https://github.com/redhat-developer/dotnet-bunny/releases/latest/download/turkey.tar.gz
-          tar xf turkey.tar.gz
+          podman restart --latest
+          podman exec --latest /bin/bash -c \
+            'echo \
+              "set -euo pipefail
+               wget --no-verbose https://github.com/redhat-developer/dotnet-bunny/releases/latest/download/turkey.tar.gz
+               tar xf turkey.tar.gz" > download-runner.sh'
+          podman exec --latest chmod +x download-runner.sh
+          podman exec --latest /bin/bash -c './download-runner.sh'
+          podman stop --latest
+ 
 
       - name: Run tests
         run: |
-          set -euo pipefail
+          container=$(podman restart --latest)
+          podman cp ${{ github.workspace }} ${container}:/
+          podman exec --latest /bin/bash -c \
+             'echo \
+                "set -euo pipefail
 
-          ### This is very questionable, but making our CI fail because distro
-          ### .NET versions are out of date doesn't sound nice.
-          rm -rf release-version-sane
+                ### This is very questionable, but making our CI fail because distro
+                ### .NET versions are out of date does not sound nice.
+                rm -rf release-version-sane
 
-          ### HACK: Filter tests that can't pass in Containers
-          rm -rf debugging-sos-lldb* createdump-aspnet cgroup-limit
+                ### HACK: Filter tests that can not pass in Containers
+                rm -rf debugging-sos-lldb* createdump-aspnet cgroup-limit
 
-          ### HACK: RID parsing is broken on alpine:edge, so these tests fail
-          if [[ ${{ matrix.container_image }} == *'alpine:edge'* ]] ; then
-              rm -rf system-data-odbc
-          fi
+                ### HACK: RID parsing is broken on alpine:edge, so these tests fail
+                if [[ ${{ matrix.container_image }} == *"alpine:edge"* ]] ; then
+                    rm -rf system-data-odbc
+                fi
 
-          ### HACK: UBI 8 is missing bash-completion, postgres, and strace packages for tests
-          if [[ ${{ matrix.container_image }} == *ubi8* ]] ; then
-              rm -rf bash-completion system-data-odbc telemetry-is-off-by-default
-          fi
-          ### HACK: UBI 9 is missing postsgres and strace package for tests
-          if [[ ${{ matrix.container_image }} == *ubi9* ]] ; then
-              rm -rf system-data-odbc telemetry-is-off-by-default 
-          fi
+                ### HACK: UBI 8 is missing bash-completion, postgres, and strace packages for tests
+                if [[ ${{ matrix.container_image }} == *ubi8* ]] ; then
+                    rm -rf bash-completion system-data-odbc telemetry-is-off-by-default
+                fi
+                ### HACK: UBI 9 is missing postsgres and strace package for tests
+                if [[ ${{ matrix.container_image }} == *ubi9* ]] ; then
+                    rm -rf system-data-odbc telemetry-is-off-by-default 
+                fi
 
-          dotnet turkey/Turkey.dll -v --timeout 600
-
-      - name: Show Logs
-        if: ${{ always() }}
-        run: |
-          set -euo pipefail
-          find -iname '*.log' -exec echo {} \; -exec cat {} \;
+                dotnet turkey/Turkey.dll dotnet-regular-tests -v" > run-tests.sh'
+            podman exec --latest chmod +x run-tests.sh
+            podman exec --latest /bin/bash -c '/run-tests.sh'
+            podman exec --latest ls
+            podman stop --latest

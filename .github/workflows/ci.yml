@@ -18,32 +18,21 @@ jobs:
       fail-fast: false
       matrix:
         container_image:
-          - docker.io/library/alpine:latest
-          - docker.io/library/alpine:edge
-          - quay.io/centos/centos:stream8
-          - quay.io/centos/centos:stream9
-          - registry.fedoraproject.org/fedora:38
-          - registry.fedoraproject.org/fedora:39
-          - registry.fedoraproject.org/fedora:rawhide
-          - registry.access.redhat.com/ubi8
-          - registry.access.redhat.com/ubi9
+          - fedora:39
+          - ubi8
         dotnet_version:
-          - "6.0"
-          - "7.0"
           - "8.0"
-        exclude:
-          - container_image: docker.io/library/alpine:latest
-            dotnet_version: "8.0"
-          - container_image: registry.fedoraproject.org/fedora:rawhide
-            dotnet_version: "7.0"
-
-    container:
-      image: ${{ matrix.container_image }}
-      options: --security-opt seccomp=unconfined
-
+        arch:
+          - arm64
+          - s390x
 
     steps:
       - uses: actions/checkout@v3
+      - uses: uraimo/run-on-arch-action@v2
+        name: Initialize Containers
+        with:
+          arch: ${{ matrix.arch }}
+          distro: ${{ matrix.container_image }}
 
       - name: Install .NET ${{ matrix.dotnet_version }}
         timeout-minutes: 5

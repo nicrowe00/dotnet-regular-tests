@@ -1,0 +1,15 @@
+{
+    "name": "sha1-validation",
+    "enabled": true,
+    "requiresSdk": true,
+    "version": "6.0",
+    "versionSpecific": false,
+    "type": "xunit",
+    "cleanup": true,
+    "skipWhen": [
+
+    ],
+    "ignoredRIDs":[
+
+    ]
+}

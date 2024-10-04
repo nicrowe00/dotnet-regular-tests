@@ -28,7 +28,7 @@ WORKLOAD="wasm-tools"
 dotnet workload install "$WORKLOAD"
 echo "PASS: workload install."
 
-WORKLOAD_LIST=$(dotnet workload list | grep "$WORKLOAD")
+WORKLOAD_LIST=$(sudo dotnet workload list | grep "$WORKLOAD")
 if [[ "$WORKLOAD_LIST" != *"$WORKLOAD"* ]]; then
   echo "FAIL: workload list."
   exit 1

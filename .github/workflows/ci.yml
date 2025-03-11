@@ -59,6 +59,8 @@ jobs:
           compose: ${{ matrix.compose }}
           variables: ${{ matrix.dotnet_version }}
           arch: ${{ matrix.arch }}
+          git_url: ${{ github.event.pull_request.head.repo.clone_url }}
+          git_ref: ${{ github.event.pull_request.head.ref }}
           tf_scope: private
     
   # alpine:

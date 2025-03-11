@@ -26,6 +26,7 @@ jobs:
           - "9.0"
         arch:
           - x86_64
+          - s390x
 
     steps:
       - name: Get User Permission
@@ -57,6 +58,8 @@ jobs:
           tmt_plan_regex: "ci"
           compose: ${{ matrix.compose }}
           variables: ${{ matrix.dotnet_version }}
+          arch: ${{ matrix.arch }}
+          tf_scope: private
     
   # alpine:
   #   name: Verify tests pass (alpine)

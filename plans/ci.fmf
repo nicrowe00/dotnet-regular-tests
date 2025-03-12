@@ -5,8 +5,10 @@ execute:
     script: |
         set -euo pipefail
         cat /etc/os-release
+        ${{ matrix.dotnet_version }}
+        dotnet_version=${{ matrix.dotnet_version }}
         if grep fedora /etc/os-release; then
-          dnf install -y dotnet-sdk-${{ matrix.dotnet_version }}
+          dnf install -y dotnet-sdk-${{ dotnet_version }}
           dnf install -y \
             dotnet-sdk-dbg-${{ matrix.dotnet_version }} \
             dotnet-runtime-dbg-${{ matrix.dotnet_version }} \

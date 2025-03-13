@@ -38,16 +38,6 @@ execute:
         wget --no-verbose https://github.com/redhat-developer/dotnet-bunny/releases/latest/download/turkey.tar.gz
         tar xf turkey.tar.gz
 
-        trait_flags=()
-
-        if [[ ${{ matrix.compose }} == *ubi8* ]] ; then
-          trait_flags+=( --trait ubi8-repos )
-        fi
-
-        if [[ ${{ matrix.compose }} == *ubi9* ]] ; then
-          trait_flags+=( --trait ubi9-repos )
-        fi
-
-        dotnet turkey/Turkey.dll -v --timeout 600 --trait github-ci "${trait_flags[@]}"
+        dotnet turkey/Turkey.dll -v --timeout 600
 
         find -iname '*.log' -exec echo {} \; -exec cat {} \;

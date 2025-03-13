@@ -21,6 +21,7 @@ jobs:
           - CentOS-Stream-10
           - Fedora-40
           - Fedora-41
+          - Fedora-Rawhide
           - RHEL-8-Released
           - RHEL-9.5.0-Nightly
         dotnet_version:
@@ -28,7 +29,9 @@ jobs:
           - "9.0"
         arch:
           - x86_64
+          - aarch64
           - s390x
+          - ppc64le
 
     steps:
       - name: Get User Permission
@@ -63,80 +66,80 @@ jobs:
           variables: "dotnet_version=${{ matrix.dotnet_version }}; arch=${{ matrix.arch }}}"
           tf_scope: private
     
-  # alpine:
-  #   name: Verify tests pass (alpine)
+  alpine:
+     name: Verify tests pass (alpine)
 
-  #   runs-on: ubuntu-latest
+     runs-on: ubuntu-latest
 
-  #   timeout-minutes: 30
+     timeout-minutes: 30
 
-  #   strategy:
-  #     fail-fast: false
-  #     matrix:
-  #       container_image:
-  #         - docker.io/library/alpine:latest
-  #         - docker.io/library/alpine:edge
-  #       dotnet_version:
-  #         - "8.0"
-  #         - "9.0"
+     strategy:
+       fail-fast: false
+       matrix:
+         container_image:
+           - docker.io/library/alpine:latest
+           - docker.io/library/alpine:edge
+         dotnet_version:
+           - "8.0"
+           - "9.0"
 
-  #   container:
-  #     image: ${{ matrix.container_image }}
-  #     options: --security-opt seccomp=unconfined
+     container:
+       image: ${{ matrix.container_image }}
+       options: --security-opt seccomp=unconfined
 
-  #   steps:
-  #     - uses: actions/checkout@v4
+     steps:
+       - uses: actions/checkout@v4
 
-  #     - name: Install .NET ${{ matrix.dotnet_version }}
-  #       timeout-minutes: 10
+       - name: Install .NET ${{ matrix.dotnet_version }}
+         timeout-minutes: 10
 
-  #       run: |
-  #         set -euo pipefail
-  #         cat /etc/os-release
+         run: |
+           set -euo pipefail
+           cat /etc/os-release
 
-  #         if grep edge /etc/os-release; then
-  #           echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
-  #         fi
-  #         apk add dotnet-sdk-${{ matrix.dotnet_version }} dotnet-doc
-  #         apk add \
-  #           dotnet-sdk-dbg-${{ matrix.dotnet_version }} \
-  #           dotnet-runtime-dbg-${{ matrix.dotnet_version }} \
-  #           aspnetcore-runtime-dbg-${{ matrix.dotnet_version }}
-  #         if [[ ${{ matrix.dotnet_version }} == 9.* ]]; then
-  #           apk add dotnet-sdk-aot-${{ matrix.dotnet_version }}
-  #         fi
+           if grep edge /etc/os-release; then
+             echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+           fi
+           apk add dotnet-sdk-${{ matrix.dotnet_version }} dotnet-doc
+           apk add \
+             dotnet-sdk-dbg-${{ matrix.dotnet_version }} \
+             dotnet-runtime-dbg-${{ matrix.dotnet_version }} \
+             aspnetcore-runtime-dbg-${{ matrix.dotnet_version }}
+           if [[ ${{ matrix.dotnet_version }} == 9.* ]]; then
+             apk add dotnet-sdk-aot-${{ matrix.dotnet_version }}
+           fi
       
-  #     - name: Install Test dependencies
-  #       timeout-minutes: 5
-  #       run: |
-  #         apk add python3 wget curl $(grep '^Dependencies(apk): ' README.md | cut -d: -f2-)
-  #         echo -e '[PostgreSQL]\nDescription=PostgreSQL Unicode\nDriver=/usr/lib/psqlodbcw.so\nUsageCount=1' > /etc/odbcinst.ini
+       - name: Install Test dependencies
+         timeout-minutes: 5
+         run: |
+           apk add python3 wget curl $(grep '^Dependencies(apk): ' README.md | cut -d: -f2-)
+           echo -e '[PostgreSQL]\nDescription=PostgreSQL Unicode\nDriver=/usr/lib/psqlodbcw.so\nUsageCount=1' > /etc/odbcinst.ini
 
-  #     - name: Download test runner
-  #       run: |
-  #         set -euo pipefail
-  #         wget --no-verbose https://github.com/redhat-developer/dotnet-bunny/releases/latest/download/turkey.tar.gz
-  #         tar xf turkey.tar.gz    
+       - name: Download test runner
+         run: |
+           set -euo pipefail
+           wget --no-verbose https://github.com/redhat-developer/dotnet-bunny/releases/latest/download/turkey.tar.gz
+           tar xf turkey.tar.gz    
 
-  #     - name: Run tests
-  #       run: |
-  #         set -euo pipefail
+       - name: Run tests
+         run: |
+           set -euo pipefail
 
-  #         trait_flags=()
+           trait_flags=()
 
-  #         if [[ ${{ matrix.container_image }} == *ubi8* ]] ; then
-  #             trait_flags+=( --trait ubi8-repos )
-  #         fi
+           if [[ ${{ matrix.container_image }} == *ubi8* ]] ; then
+               trait_flags+=( --trait ubi8-repos )
+           fi
 
-  #         if [[ ${{ matrix.container_image }} == *ubi9* ]] ; then
-  #             trait_flags+=( --trait ubi9-repos )
-  #         fi
+           if [[ ${{ matrix.container_image }} == *ubi9* ]] ; then
+               trait_flags+=( --trait ubi9-repos )
+           fi
 
-  #         dotnet turkey/Turkey.dll -v --timeout 600 --trait github-ci "${trait_flags[@]}"
-  #       shell: bash
+           dotnet turkey/Turkey.dll -v --timeout 600 --trait github-ci "${trait_flags[@]}"
+         shell: bash
 
-  #     - name: Show Logs
-  #       if: ${{ always() }}
-  #       run: |
-  #         set -euo pipefail
-  #         find -iname '*.log' -exec echo {} \; -exec cat {} \;
+       - name: Show Logs
+         if: ${{ always() }}
+         run: |
+           set -euo pipefail
+           find -iname '*.log' -exec echo {} \; -exec cat {} \;

@@ -21,8 +21,8 @@ jobs:
           - CentOS-Stream-10
           - Fedora-40
           - Fedora-41
-          - RHEL-8
-          - RHEL-9
+          - RHEL-8-Released
+          - RHEL-9.5.0
         dotnet_version:
           - "8.0"
           - "9.0"

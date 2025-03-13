@@ -32,7 +32,12 @@ jobs:
           - "aarch64"
           - "s390x"
           - "ppc64le"
-
+        exclude:
+          - compose: CentOS-Stream-9
+            arch: "s390x"
+          - compose: CentOS-Stream-10
+            arch: "s390x"
+            
     steps:
       - name: Get User Permission
         id: checkAccess

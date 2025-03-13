@@ -38,6 +38,8 @@ execute:
         wget --no-verbose https://github.com/redhat-developer/dotnet-bunny/releases/latest/download/turkey.tar.gz
         tar xf turkey.tar.gz
 
+        rm -rf release-version-sane
+
         dotnet turkey/Turkey.dll -v --timeout 600
 
         find -iname '*.log' -exec echo {} \; -exec cat {} \;

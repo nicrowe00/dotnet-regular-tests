@@ -28,10 +28,10 @@ jobs:
           - "8.0"
           - "9.0"
         arch:
-          - "x86_64"
-          - "aarch64"
-          - "s390x"
-          - "ppc64le"
+          - x86_64
+          - aarch64
+          - s390x
+          - ppc64le
         exclude:
           - compose: CentOS-Stream-9
             arch: "s390x"

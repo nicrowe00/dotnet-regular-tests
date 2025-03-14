@@ -11,12 +11,8 @@ execute:
             dotnet-sdk-dbg-"${dotnet_version}" \
             dotnet-runtime-dbg-"${dotnet_version}" \
             aspnetcore-runtime-dbg-"${dotnet_version}"
-          if [[ ${dotnet_version} == 9.* ]]; then
-            echo ${arch} >> log.log
-            cat log.log
-            if [[ "${arch}" == x86_64 ]]; then
-              dnf install -y dotnet-sdk-aot-"${dotnet_version}"
-            fi
+          if [ "${dotnet_version}" == 9.* ] && [[ "${arch}" == x86_64 || "${arch}" == aarch64 ]];
+            dnf install -y dotnet-sdk-aot-"${dotnet_version}"
           fi
         elif grep alpine /etc/os-release; then
           if grep edge /etc/os-release; then

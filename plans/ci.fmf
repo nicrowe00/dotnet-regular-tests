@@ -12,7 +12,9 @@ execute:
             dotnet-runtime-dbg-"${dotnet_version}" \
             aspnetcore-runtime-dbg-"${dotnet_version}"
           if [[ ${dotnet_version} == 9.* ]]; then
-            if [[ ${arch} == x86_64 ]]; then
+            echo ${arch} >> log.log
+            cat log.log
+            if [[ "${arch}" == x86_64 ]]; then
               dnf install -y dotnet-sdk-aot-"${dotnet_version}"
             fi
           fi

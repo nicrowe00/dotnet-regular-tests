@@ -37,7 +37,7 @@ execute:
           echo -e '[PostgreSQL]\nDescription=PostgreSQL Unicode\nDriver=/usr/lib/psqlodbcw.so\nUsageCount=1' > /etc/odbcinst.ini
         fi
 
-        if [[ "${arch}" == arch64 ]]; then
+        if [[ "${arch}" == aarch64 ]]; then
           dnf install -y tar
         fi
 

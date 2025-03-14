@@ -17,21 +17,21 @@ jobs:
       fail-fast: false
       matrix:
         compose:
-         # - CentOS-Stream-9
-         ## - CentOS-Stream-10
-         # - Fedora-40
+          - CentOS-Stream-9
+          - CentOS-Stream-10
+          - Fedora-40
           - Fedora-41
-         # - Fedora-Rawhide
-         # - RHEL-8-Released
-         # - RHEL-9.5.0-Nightly
+          - Fedora-Rawhide
+          - RHEL-8-Released
+          - RHEL-9.5.0-Nightly
         dotnet_version:
-        #  - "8.0"
+          - "8.0"
           - "9.0"
         arch:
           - "x86_64"
-         # - "aarch64"
+          - "aarch64"
           - "s390x"
-         # - "ppc64le"
+          - "ppc64le"
         exclude:
           - compose: CentOS-Stream-9
             arch: "s390x"

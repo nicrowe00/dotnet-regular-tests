@@ -68,7 +68,7 @@ jobs:
           tmt_plan_regex: "ci"
           compose: ${{ matrix.compose }}
           arch: ${{ matrix.arch }}
-          variables: "dotnet_version=${{ matrix.dotnet_version }};arch=${{ matrix.arch }}}"
+          variables: "dotnet_version=${{ matrix.dotnet_version }};arch=${{ matrix.arch }}"
           tf_scope: private
     
   alpine:

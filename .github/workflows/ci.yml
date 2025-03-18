@@ -22,7 +22,7 @@ jobs:
           - Fedora-40
           - Fedora-41
           - Fedora-Rawhide
-          - RHEL-8-Released
+          - RHEL-8.10.0-Nightly
           - RHEL-9.5.0-Nightly
         dotnet_version:
           - "8.0"

@@ -54,7 +54,7 @@ execute:
            exit_status=$?
         fi
 
-        cp -r dotnet-regular-tests-logs $TMT_PLAN_DATA
+        cp -r dotnet-regular-tests-logs /var/ARTIFACTS
 
         echo $TMT_PLAN_DATA >> log.log
         cat log.log

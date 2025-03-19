@@ -46,12 +46,14 @@ execute:
 
         rm -rf release-version-sane
 
-        dotnet turkey/Turkey.dll -v l="$TMT_TEST_DATA" --timeout 600
+        mkdir dotnet-regular-tests-logs
+
+        dotnet turkey/Turkey.dll -v -l dotnet-regular-tests-logs --timeout 600
 
         find -iname '*.log' -exec echo {} \; -exec cat {} \;
 finish:
    how: shell
    script:
     # move all tmt plan logs to tmt plan data folder
-    - mkdir -p $TMT_PLAN_DATA/test-tmt-log
-    - cp -r /var/tmp/tmt/run-* $TMT_PLAN_DATA/test-tmt-log
+    - mkdir -p $TMT_PLAN_DATA
+    - cp -r dotnet-regular-tests-logs $TMT_PLAN_DATA

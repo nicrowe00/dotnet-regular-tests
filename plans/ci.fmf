@@ -52,6 +52,7 @@ execute:
            exit_status=0
         else
            exit_status=$?
+        fi
 
         mkdir $TMT_PLAN_DATA
         cp -r dotnet-regular-tests-logs $TMT_PLAN_DATA

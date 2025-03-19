@@ -55,5 +55,5 @@ finish:
    how: shell
    script:
     # move all tmt plan logs to tmt plan data folder
-    - mkdir -p $TMT_PLAN_DATA
+    - mkdir $TMT_PLAN_DATA
     - cp -r dotnet-regular-tests-logs $TMT_PLAN_DATA

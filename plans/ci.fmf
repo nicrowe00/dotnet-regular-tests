@@ -56,6 +56,9 @@ execute:
         mkdir $TMT_PLAN_DATA
         cp -r dotnet-regular-tests-logs $TMT_PLAN_DATA
 
+        echo $TMT_PLAN_DATA >> log.log
+        cat log.log
+
         find -iname '*.log' -exec echo {} \; -exec cat {} \;
 
         exit ${exit_status}

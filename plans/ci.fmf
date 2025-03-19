@@ -59,6 +59,4 @@ execute:
         echo $TMT_PLAN_DATA >> log.log
         cat log.log
 
-        find -iname '*.log' -exec echo {} \; -exec cat {} \;
-
         exit ${exit_status}

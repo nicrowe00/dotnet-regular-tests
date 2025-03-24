@@ -5,6 +5,7 @@ execute:
     script: |
         set -euo pipefail
         cat /etc/os-release
+        echo "Hello"
         if grep fedora /etc/os-release; then
           dnf install -y dotnet-sdk-"${dotnet_version}"
           dnf install -y \

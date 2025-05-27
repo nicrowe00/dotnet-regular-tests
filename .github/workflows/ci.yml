@@ -36,13 +36,12 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
 
-    strategy:
-      fail-fast: false
-      matrix:
+      - strategy:
+        fail-fast: false
+        matrix:
         compose:
           - CentOS-Stream-9
           - CentOS-Stream-10
-          - Fedora-40
           - Fedora-42
           - Fedora-Rawhide
           - RHEL-8-Nightly
@@ -62,7 +61,6 @@ jobs:
           - compose: CentOS-Stream-10
             arch: "s390x"
 
-      steps:
       - name: Schedule tests on Testing Farm
         uses: sclorg/testing-farm-as-github-action@v3.1.2
         with:

@@ -42,6 +42,7 @@ jobs:
         compose:
           - CentOS-Stream-9
           - CentOS-Stream-10
+          - Fedora-41
           - Fedora-42
           - Fedora-Rawhide
           - RHEL-8-Nightly

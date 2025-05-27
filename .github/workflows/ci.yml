@@ -16,31 +16,31 @@ jobs:
     strategy:
         fail-fast: false
         matrix:
-        compose:
-          - CentOS-Stream-9
-          - CentOS-Stream-10
-          - Fedora-41
-          - Fedora-42
-          - Fedora-Rawhide
-          - RHEL-8-Nightly
-          - RHEL-9-Nightly
-          - RHEL-10-Nightly
-        dotnet_version:
-          - "8.0"
-          - "9.0"
-        arch:
-          - "x86_64"
-          - "aarch64"
-          - "s390x"
-          - "ppc64le"
-        include:
-          - container_image: registry.fedoraproject.org/fedora:42
-            dotnet_version: "10.0"
-        exclude:
-          - compose: CentOS-Stream-9
-            arch: "s390x"
-          - compose: CentOS-Stream-10
-            arch: "s390x"
+          compose:
+            - CentOS-Stream-9
+            - CentOS-Stream-10
+            - Fedora-41
+            - Fedora-42
+            - Fedora-Rawhide
+            - RHEL-8-Nightly
+            - RHEL-9-Nightly
+            - RHEL-10-Nightly
+          dotnet_version:
+            - "8.0"
+            - "9.0"
+          arch:
+            - "x86_64"
+            - "aarch64"
+            - "s390x"
+            - "ppc64le"
+          include:
+            - container_image: registry.fedoraproject.org/fedora:42
+              dotnet_version: "10.0"
+          exclude:
+            - compose: CentOS-Stream-9
+              arch: "s390x"
+            - compose: CentOS-Stream-10
+              arch: "s390x"
 
     steps:
       - name: Get User Permission

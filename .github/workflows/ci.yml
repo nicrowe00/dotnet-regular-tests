@@ -13,6 +13,12 @@ jobs:
 
     timeout-minutes: 60
 
+    steps:
+    - name: Check out code
+      uses: actions/checkout@v4
+      with:
+        ref: ${{ github.event.pull_request.head.sha }}
+
     strategy:
       fail-fast: false
       matrix:
@@ -22,8 +28,9 @@ jobs:
           - Fedora-40
           - Fedora-41
           - Fedora-Rawhide
-          - RHEL-8.10.0-Nightly
-          - RHEL-9.5.0-Nightly
+          - RHEL-8-Nightly
+          - RHEL-9-Nightly
+          - RHEL-10-Nightly
         dotnet_version:
           - "8.0"
           - "9.0"
@@ -55,11 +62,6 @@ jobs:
           echo "Current permission level is ${{ steps.checkAccess.outputs.user-permission }}"
           echo "Job originally triggered by ${{ github.actor }}"
           exit 1
-
-      - name: Check out code
-        uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Schedule tests on Testing Farm
         uses: sclorg/testing-farm-as-github-action@v3.1.2

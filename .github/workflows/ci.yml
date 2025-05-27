@@ -12,38 +12,6 @@ jobs:
     runs-on: ubuntu-latest
 
     timeout-minutes: 60
-
-    steps:
-    - name: Check out code
-      uses: actions/checkout@v4
-      with:
-        ref: ${{ github.event.pull_request.head.sha }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        compose:
-          - CentOS-Stream-9
-          - CentOS-Stream-10
-          - Fedora-40
-          - Fedora-41
-          - Fedora-Rawhide
-          - RHEL-8-Nightly
-          - RHEL-9-Nightly
-          - RHEL-10-Nightly
-        dotnet_version:
-          - "8.0"
-          - "9.0"
-        arch:
-          - "x86_64"
-          - "aarch64"
-          - "s390x"
-          - "ppc64le"
-        exclude:
-          - compose: CentOS-Stream-9
-            arch: "s390x"
-          - compose: CentOS-Stream-10
-            arch: "s390x"
             
     steps:
       - name: Get User Permission
@@ -63,6 +31,38 @@ jobs:
           echo "Job originally triggered by ${{ github.actor }}"
           exit 1
 
+      - name: Check out code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        compose:
+          - CentOS-Stream-9
+          - CentOS-Stream-10
+          - Fedora-40
+          - Fedora-42
+          - Fedora-Rawhide
+          - RHEL-8-Nightly
+          - RHEL-9-Nightly
+          - RHEL-10-Nightly
+        dotnet_version:
+          - "8.0"
+          - "9.0"
+        arch:
+          - "x86_64"
+          - "aarch64"
+          - "s390x"
+          - "ppc64le"
+        exclude:
+          - compose: CentOS-Stream-9
+            arch: "s390x"
+          - compose: CentOS-Stream-10
+            arch: "s390x"
+
+      steps:
       - name: Schedule tests on Testing Farm
         uses: sclorg/testing-farm-as-github-action@v3.1.2
         with:

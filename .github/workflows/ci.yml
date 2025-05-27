@@ -12,7 +12,36 @@ jobs:
     runs-on: ubuntu-latest
 
     timeout-minutes: 60
-            
+
+    strategy:
+        fail-fast: false
+        matrix:
+        compose:
+          - CentOS-Stream-9
+          - CentOS-Stream-10
+          - Fedora-41
+          - Fedora-42
+          - Fedora-Rawhide
+          - RHEL-8-Nightly
+          - RHEL-9-Nightly
+          - RHEL-10-Nightly
+        dotnet_version:
+          - "8.0"
+          - "9.0"
+        arch:
+          - "x86_64"
+          - "aarch64"
+          - "s390x"
+          - "ppc64le"
+        include:
+          - container_image: registry.fedoraproject.org/fedora:42
+            dotnet_version: "10.0"
+        exclude:
+          - compose: CentOS-Stream-9
+            arch: "s390x"
+          - compose: CentOS-Stream-10
+            arch: "s390x"
+
     steps:
       - name: Get User Permission
         id: checkAccess
@@ -35,31 +64,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
-
-      - strategy:
-        fail-fast: false
-        matrix:
-        compose:
-          - CentOS-Stream-9
-          - CentOS-Stream-10
-          - Fedora-42
-          - Fedora-Rawhide
-          - RHEL-8-Nightly
-          - RHEL-9-Nightly
-          - RHEL-10-Nightly
-        dotnet_version:
-          - "8.0"
-          - "9.0"
-        arch:
-          - "x86_64"
-          - "aarch64"
-          - "s390x"
-          - "ppc64le"
-        exclude:
-          - compose: CentOS-Stream-9
-            arch: "s390x"
-          - compose: CentOS-Stream-10
-            arch: "s390x"
 
       - name: Schedule tests on Testing Farm
         uses: sclorg/testing-farm-as-github-action@v3.1.2
@@ -93,7 +97,10 @@ jobs:
        options: --security-opt seccomp=unconfined
 
      steps:
-       - uses: actions/checkout@v4
+       - name: Check out code
+         uses: actions/checkout@v4
+         with:
+            ref: ${{ github.event.pull_request.head.sha }}
 
        - name: Install .NET ${{ matrix.dotnet_version }}
          timeout-minutes: 10

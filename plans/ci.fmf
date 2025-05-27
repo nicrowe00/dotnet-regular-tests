@@ -5,13 +5,22 @@ execute:
     script: |
         set -euo pipefail
         cat /etc/os-release
+
         if grep fedora /etc/os-release; then
+          if [[ ${{ matrix.dotnet_version }} == 10.* ]]; then
+              dnf install 'dnf-command(copr)' -y
+              if grep centos /etc/os-release; then
+                dnf copr enable @dotnet-sig/dotnet-preview centos-stream-10-x86_64 -y
+              else
+                dnf copr enable @dotnet-sig/dotnet-preview -y
+              fi
+          fi
           dnf install -y dotnet-sdk-"${dotnet_version}"
           dnf install -y \
             dotnet-sdk-dbg-"${dotnet_version}" \
             dotnet-runtime-dbg-"${dotnet_version}" \
             aspnetcore-runtime-dbg-"${dotnet_version}"
-          if [[ "${dotnet_version}" == 9.* ]]; then
+          if [[ "${dotnet_version}" != 8.* ]]; then
             if [[ "${arch}" == x86_64 || "${arch}" == aarch64 ]]; then
               dnf install -y dotnet-sdk-aot-"${dotnet_version}"
             fi
@@ -25,7 +34,7 @@ execute:
             dotnet-sdk-dbg-"${dotnet_version}" \
             dotnet-runtime-dbg-"${dotnet_version}" \
             aspnetcore-runtime-dbg-"${dotnet_version}"
-          if [[ "${dotnet_version}" == 9.* ]]; then
+          if [[ "${dotnet_version}" != 8.* ]]; then
             apk add dotnet-sdk-aot-"${dotnet_version}"
           fi
         fi

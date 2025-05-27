@@ -34,7 +34,7 @@ jobs:
             - "s390x"
             - "ppc64le"
           include:
-            - container_image: registry.fedoraproject.org/fedora:42
+            - compose: Fedora-42
               dotnet_version: "10.0"
           exclude:
             - compose: CentOS-Stream-9

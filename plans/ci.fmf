@@ -7,7 +7,7 @@ execute:
         cat /etc/os-release
 
         if grep fedora /etc/os-release; then
-          if [[ "${matrix.dotnet_version}" == 10.* ]]; then
+          if [[ "${dotnet_version}" == 10.* ]]; then
               dnf install 'dnf-command(copr)' -y
               if grep centos /etc/os-release; then
                 dnf copr enable @dotnet-sig/dotnet-preview centos-stream-10-x86_64 -y

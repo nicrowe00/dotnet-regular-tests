@@ -55,8 +55,6 @@ execute:
 
         rm -rf release-version-sane
 
-        mkdir dotnet-regular-tests-logs
-
         if dotnet turkey/Turkey.dll -v -l="$TMT_TEST_DATA" --timeout 600; then
            exit_status=0
         else

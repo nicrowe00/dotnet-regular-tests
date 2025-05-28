@@ -15,8 +15,6 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: set matrix
         id: set-matrix
@@ -52,8 +50,6 @@ jobs:
 
       - name: Check out code
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
 
       - name: Schedule tests on Testing Farm
         uses: sclorg/testing-farm-as-github-action@v3.1.2
@@ -65,9 +61,6 @@ jobs:
           arch: ${{ matrix.arch }}
           variables: "dotnet_version=${{ matrix.dotnet_version }};arch=${{ matrix.arch }}"
           tf_scope: private
-          update_pull_request_status: true
-          create_issue_comment: true
-          pull_request_status_name: "${{ matrix.compose }} (${{ matrix.arch }}) - ${{ matrix.dotnet_version }}"
 
     
   alpine:

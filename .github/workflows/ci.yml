@@ -13,6 +13,24 @@ jobs:
 
     timeout-minutes: 60
 
+    uses: actions-cool/check-user-permission@v2
+    with:
+      require: write
+      username: ${{ github.triggering_actor }}
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    if: steps.checkAccess.outputs.require-result == 'false'
+    run: |
+      echo "${{ github.triggering_actor }} does not have permissions on this repo."
+      echo "Current permission level is ${{ steps.checkAccess.outputs.user-permission }}"
+      echo "Job originally triggered by ${{ github.actor }}"
+      exit 1
+    
+    uses: actions/checkout@v4
+    with:
+      ref: ${{ github.event.pull_request.head.sha }}
+
     strategy:
         fail-fast: false
         matrix:
@@ -31,16 +49,9 @@ jobs:
           arch:
             - "x86_64"
             - "aarch64"
-            - "s390x"
-            - "ppc64le"
           include:
             - compose: Fedora-42
               dotnet_version: "10.0"
-          exclude:
-            - compose: CentOS-Stream-9
-              arch: "s390x"
-            - compose: CentOS-Stream-10
-              arch: "s390x"
 
     steps:
       - name: Get User Permission

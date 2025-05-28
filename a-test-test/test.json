@@ -1,0 +1,13 @@
+{
+  "name": "a-test-test",
+  "enabled": true,
+  "requiresSdk": true,
+  "version": "2.0",
+  "versionSpecific": false,
+  "type": "bash",
+  "cleanup": true,
+  "skipWhen": [
+  ],
+  "ignoredRIDs":[
+  ]
+}

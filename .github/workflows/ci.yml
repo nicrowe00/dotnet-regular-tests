@@ -8,6 +8,7 @@ on:
 jobs:
 
   configure:
+    name: Configure Matrix
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -58,11 +59,16 @@ jobs:
         uses: sclorg/testing-farm-as-github-action@v3.1.2
         with:
           api_key: ${{ secrets.TF_API_KEY }}
+          commit_sha:  ${{ github.event.pull_request.head.sha }}
           tmt_plan_regex: "ci"
           compose: ${{ matrix.compose }}
           arch: ${{ matrix.arch }}
           variables: "dotnet_version=${{ matrix.dotnet_version }};arch=${{ matrix.arch }}"
           tf_scope: private
+          update_pull_request_status: true
+          create_issue_comment: true
+          pull_request_status_name: "${{ matrix.compose }} (${{ matrix.arch }}) - ${{ matrix.dotnet_version }}"
+
     
   alpine:
      name: Verify tests pass (alpine)

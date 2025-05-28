@@ -1,0 +1,26 @@
+{
+  "compose": [
+    "CentOS-Stream-9",
+    "CentOS-Stream-10",
+    "Fedora-40",
+    "Fedora-42",
+    "Fedora-Rawhide",
+    "RHEL-8-Nightly",
+    "RHEL-9-Nightly",
+    "RHEL-10-Nightly"
+  ],
+  "dotnet_version": [
+    "8.0",
+    "9.0"
+  ],
+  "arch": [
+    "x86_64",
+    "aarch64"
+  ],
+  "include": [
+    {
+      "compose": "Fedora-42",
+      "dotnet_version": "10.0"
+    }
+  ]
+}

@@ -57,12 +57,10 @@ execute:
 
         mkdir dotnet-regular-tests-logs
 
-        if dotnet turkey/Turkey.dll -v -l dotnet-regular-tests-logs --timeout 600; then
+        if dotnet turkey/Turkey.dll -v -l="$TMT_TEST_DATA" --timeout 600; then
            exit_status=0
         else
            exit_status=$?
         fi
-
-        cp -r dotnet-regular-tests-logs $TMT_PLAN_DATA
 
         exit ${exit_status}

@@ -1,4 +1,12 @@
 summary: Run dotnet-regular-tests
+prepare:
+    - name: prepare repository
+      how: shell
+      script: |
+        git clone --recurse-submodules $REPO_URL /root/$REPO_NAME
+        cd /root/$REPO_NAME
+        git fetch origin +refs/pull/*:refs/remotes/origin/pr/*
+        git checkout origin/pr/$PR_NUMBER/head
 execute:
     how: tmt
     duration: 30m

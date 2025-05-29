@@ -47,6 +47,10 @@ jobs:
     steps:
       - name: Check out code
         uses: actions/checkout@v4
+
+      - name: Test
+        run: |
+          echo "${{ github.event.pull_request.head.ref }}"
           
       - name: Schedule tests on Testing Farm
         uses: sclorg/testing-farm-as-github-action@v3.1.2
@@ -58,5 +62,5 @@ jobs:
           update_pull_request_status: true
           create_issue_comment: true
           pull_request_status_name: "${{ matrix.compose }} (${{ matrix.arch }}) - ${{ matrix.dotnet_version }}"
-          variables: "dotnet_version=${{ matrix.dotnet_version }};arch=${{ matrix.arch }};REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }}"
+          variables: "dotnet_version=${{ matrix.dotnet_version }};arch=${{ matrix.arch }};REPO_URL=https://github.com/${{ github.event.pull_request.user.login}}/${{ github.event.pull_request.head.ref }}"
           tf_scope: private

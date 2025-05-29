@@ -60,5 +60,5 @@ jobs:
           tmt_plan_regex: "ci"
           compose: ${{ matrix.compose }}
           arch: ${{ matrix.arch }}
-          variables: "dotnet_version=${{ matrix.dotnet_version }};arch=${{ matrix.arch }};REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }}"
+          variables: "dotnet_version=${{ matrix.dotnet_version }};arch=${{ matrix.arch }};REPO_URL=${{ github.event.repo.url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }}"
           tf_scope: private

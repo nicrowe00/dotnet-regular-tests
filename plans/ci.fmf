@@ -3,7 +3,7 @@ prepare:
     - name: prepare repository
       how: shell
       script: |
-        git clone --recurse-submodules $REPO_URL /root/$REPO_NAME
+        git clone --recurse-submodules /root/$REPO_URL
         cd /root/$REPO_NAME
         git fetch origin +refs/pull/*:refs/remotes/origin/pr/*
         git checkout origin/pr/$PR_NUMBER/head

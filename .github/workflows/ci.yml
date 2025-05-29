@@ -28,12 +28,16 @@ jobs:
           dotnet_version:
             - "8.0"
             - "9.0"
-          include:
-            - compose: Fedora-42
-              dotnet_version: "10.0"
           arch:
             - "x86_64"
             - "aarch64"
+          include:
+            - compose: Fedora-42
+              dotnet_version: "10.0"
+              arch: "x86_64"
+            - compose: Fedora-42
+              dotnet_version: "10.0"
+              arch: "aarch64"
 
     if: |
       github.event.issue.pull_request

@@ -9,9 +9,6 @@ jobs:
     name: Verify tests pass (tf)
     runs-on: ubuntu-latest
     timeout-minutes: 60
-    concurrency:
-      group: dotnet-${{ github.event.issue.number }}-${{ matrix.compose }}-${{ matrix.dotnet_version }}-${{ matrix.arch }}
-      cancel-in-progress: true
 
     strategy:
         fail-fast: false

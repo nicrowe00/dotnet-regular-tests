@@ -55,7 +55,6 @@ jobs:
         uses: sclorg/testing-farm-as-github-action@v3.1.2
         with:
           api_key: ${{ secrets.TF_API_KEY }}
-          commit_sha:  ${{ github.event.pull_request.head.sha }}
           tmt_plan_regex: "ci"
           compose: ${{ matrix.compose }}
           arch: ${{ matrix.arch }}

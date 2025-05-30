@@ -1,52 +1,53 @@
-on:
-  issue_comment:
-    types:
-      - created
+on: 
+  push:
+    branches:
+      - main
+  pull_request_target:
+    types: [opened, synchronize, reopened]
 
 jobs:
+
+  configure:
+    name: Configure Matrix
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: set matrix
+        id: set-matrix
+        run: echo "matrix=$(jq -c . < ./matrix.json)" >> $GITHUB_OUTPUT
 
   testing-farm:
     name: Verify tests pass (tf)
     runs-on: ubuntu-latest
+    needs: configure
     timeout-minutes: 60
-    concurrency:
-      group: dotnet-${{ github.event.issue.number }}-${{ matrix.dotnet_version }}-${{ matrix.arch }}-${{ matrix.compose }}
-      cancel-in-progress: true
-
-    strategy:
-        fail-fast: false
-        matrix:
-          compose:
-            - CentOS-Stream-9
-            - CentOS-Stream-10
-            - Fedora-41
-            - Fedora-42
-            - Fedora-Rawhide
-            - RHEL-8-Nightly
-            - RHEL-9-Nightly
-            - RHEL-10-Nightly
-          dotnet_version:
-            - "8.0"
-            - "9.0"
-          arch:
-            - "x86_64"
-            - "aarch64"
-          include:
-            - compose: Fedora-42
-              dotnet_version: "10.0"
-              arch: "x86_64"
-            - compose: Fedora-42
-              dotnet_version: "10.0"
-              arch: "aarch64"
-
-    if: |
-      github.event.issue.pull_request
-      && contains(github.event.comment.body, '[test]')
-      && contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
       
     steps:
+      - name: Get User Permission
+        id: checkAccess
+        uses: actions-cool/check-user-permission@v2
+        with:
+          require: write
+          username: ${{ github.triggering_actor }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Check User Permission
+        if: steps.checkAccess.outputs.require-result == 'false'
+        run: |
+          echo "${{ github.triggering_actor }} does not have permissions on this repo."
+          echo "Current permission level is ${{ steps.checkAccess.outputs.user-permission }}"
+          echo "Job originally triggered by ${{ github.actor }}"
+          exit 1
+
       - name: Check out code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
           
       - name: Schedule tests on Testing Farm
         uses: sclorg/testing-farm-as-github-action@v3.1.2
@@ -60,3 +61,84 @@ jobs:
           pull_request_status_name: "${{ matrix.compose }} (${{ matrix.arch }}) - ${{ matrix.dotnet_version }}"
           variables: "REPO_URL=${{ github.server_url }}/${{ github.repository }};REPO_NAME=${{ github.repository }};PR_NUMBER=${{ github.event.issue.number }};dotnet_version=${{ matrix.dotnet_version }};arch=${{ matrix.arch }}"
           tf_scope: private
+
+  alpine:
+     name: Verify tests pass (alpine)
+
+     runs-on: ubuntu-latest
+
+     timeout-minutes: 30
+
+     strategy:
+       fail-fast: false
+       matrix:
+         container_image:
+           - docker.io/library/alpine:latest
+           - docker.io/library/alpine:edge
+         dotnet_version:
+           - "8.0"
+           - "9.0"
+
+     container:
+       image: ${{ matrix.container_image }}
+       options: --security-opt seccomp=unconfined
+
+     steps:
+       - name: Check out code
+         uses: actions/checkout@v4
+         with:
+            ref: ${{ github.event.pull_request.head.sha }}
+
+       - name: Install .NET ${{ matrix.dotnet_version }}
+         timeout-minutes: 10
+
+         run: |
+           set -euo pipefail
+           cat /etc/os-release
+
+           if grep edge /etc/os-release; then
+             echo "https://dl-cdn.alpinelinux.org/alpine/edge/testing" >> /etc/apk/repositories
+           fi
+           apk add dotnet-sdk-${{ matrix.dotnet_version }} dotnet-doc
+           apk add \
+             dotnet-sdk-dbg-${{ matrix.dotnet_version }} \
+             dotnet-runtime-dbg-${{ matrix.dotnet_version }} \
+             aspnetcore-runtime-dbg-${{ matrix.dotnet_version }}
+           if [[ ${{ matrix.dotnet_version }} == 9.* ]]; then
+             apk add dotnet-sdk-aot-${{ matrix.dotnet_version }}
+           fi
+      
+       - name: Install Test dependencies
+         timeout-minutes: 5
+         run: |
+           apk add python3 wget curl $(grep '^Dependencies(apk): ' README.md | cut -d: -f2-)
+           echo -e '[PostgreSQL]\nDescription=PostgreSQL Unicode\nDriver=/usr/lib/psqlodbcw.so\nUsageCount=1' > /etc/odbcinst.ini
+
+       - name: Download test runner
+         run: |
+           set -euo pipefail
+           wget --no-verbose https://github.com/redhat-developer/dotnet-bunny/releases/latest/download/turkey.tar.gz
+           tar xf turkey.tar.gz    
+
+       - name: Run tests
+         run: |
+           set -euo pipefail
+
+           trait_flags=()
+
+           if [[ ${{ matrix.container_image }} == *ubi8* ]] ; then
+               trait_flags+=( --trait ubi8-repos )
+           fi
+
+           if [[ ${{ matrix.container_image }} == *ubi9* ]] ; then
+               trait_flags+=( --trait ubi9-repos )
+           fi
+
+           dotnet turkey/Turkey.dll -v --timeout 600 --trait github-ci "${trait_flags[@]}"
+         shell: bash
+
+       - name: Show Logs
+         if: ${{ always() }}
+         run: |
+           set -euo pipefail
+           find -iname '*.log' -exec echo {} \; -exec cat {} \;

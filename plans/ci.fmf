@@ -50,9 +50,9 @@ execute:
         fi
 
         if grep fedora /etc/os-release ; then
-          dnf install -y python3 wget $(grep '^Dependencies(dnf): ' README.md | cut -d: -f2-) --skip-broken
+          dnf install -y python3 wget $(grep '^Dependencies(dnf): ' /root/$REPO_NAME/README.md | cut -d: -f2-) --skip-broken
         elif grep alpine /etc/os-release; then
-          apk add python3 wget curl $(grep '^Dependencies(apk): ' README.md | cut -d: -f2-)
+          apk add python3 wget curl $(grep '^Dependencies(apk): ' /root/$REPO_NAME/README.md | cut -d: -f2-)
           echo -e '[PostgreSQL]\nDescription=PostgreSQL Unicode\nDriver=/usr/lib/psqlodbcw.so\nUsageCount=1' > /etc/odbcinst.ini
         fi
 

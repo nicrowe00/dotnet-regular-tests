@@ -4,6 +4,7 @@ prepare:
       how: shell
       script: |
         git clone --recurse-submodules $REPO_URL /root/$REPO_NAME
+        chmod 777 /root/$REPO_NAME
         cd /root/$REPO_NAME
         git fetch origin +refs/pull/*:refs/remotes/origin/pr/*
         git checkout origin/pr/$PR_NUMBER/head
@@ -12,7 +13,7 @@ execute:
     duration: 30m
     script: |
         set -euo pipefail
-        cd /root/$REPO_NAME
+        cd /root
         cat /etc/os-release
 
         if grep fedora /etc/os-release; then
@@ -64,7 +65,7 @@ execute:
 
         rm -rf release-version-sane
 
-        if dotnet turkey/Turkey.dll -v -l="$TMT_TEST_DATA" --timeout 600; then
+        if dotnet turkey/Turkey.dll dotnet-regular-tests -v -l="$TMT_TEST_DATA" --timeout 600; then
            exit_status=0
         else
            exit_status=$?

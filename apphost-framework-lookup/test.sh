@@ -26,4 +26,4 @@ test_publish()
 test_publish "framework-dependent" false
 test_publish "self-contained" true
 
-echo "PASS"
+echo "Pass"
